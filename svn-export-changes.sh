@@ -31,6 +31,7 @@ echo -e "\033[00;31mExporting files revised between $revision_from and $revision
 # trim $repository
 repository=`echo "$repository" | sed 's|/*$||'`
 
+echo "changed files: "
 for line in `svn diff --summarize -r$revision_from:$revision_to $repository | grep "^[AM]"`
 do
     # each line in the above command in the for loop is split into two:
@@ -40,31 +41,30 @@ do
     if [ $line != "A" ] && [ $line != "AM" ] && [ $line != "M" ]; then
         # use sed to remove the repository from the full repo and filename
         filename=`echo "$line" |sed "s|$repository||g"`
-        echo "$filename"
+        echo -e "\t$filename"
         # don't export if it's a directory we've already created
         if [ ! -d $target_directory/$filename ]; then
             directory=`dirname $filename`
-            echo $directory
-            IS_DIR_WEB=`echo "$directory" | grep -P '^WebContent/*'`;
+            IS_DIR_WEB=`echo "$directory" | grep -oP '(?:WebContent/).*'`;
             # 1) files not under 'WebContent', exports go to 'WEB-INF/classes/'
             # 2) files under 'WebContent', exports to the root of $target_directory
-            if [ $IS_DIR_WEB ]; then
+            if [ ! -n "$IS_DIR_WEB" ]; then
                 # for 'src' directory, class files will be exported for java sources
                 trim_dir="WEB-INF/classes/"`echo "$directory" | sed 's|^/||' | sed 's|[^/]*/*||'`
                 mkdir -p "$target_directory/$trim_dir"
                 filename="WEB-INF/classes/"`echo "$filename" | sed 's|^/||' | sed 's|[^/]*/||' | sed 's|.java$|.class|'`
-                echo "$filename"
                 cp "$repository/WebContent/$filename" "$target_directory/$filename"
             else
-                mkdir -p "$target_directory/$IS_DIR_WEB"
-                echo "$filename"
-                filename=`echo "$filename" | sed 's|^WebContent/||'`;
+                trim_dir=`echo "$directory" | sed 's|^/||' | sed 's|[^/]*/*||'`
+                mkdir -p "$target_directory/$trim_dir"
+                filename=`echo "$filename" | sed 's|^/||' | sed 's|[^/]*/||'`
                 svn export -qr $revision_to $line $target_directory/$filename
-                exit;
             fi
         fi
     fi
 done
 
 # to summarize any deleted files or directories at the end of the script uncomment the following line
-#svn diff --summarize -r$revision_from:$revision_to $repository | grep "^[D]"
+echo -e "\nDELETED FILES:"
+svn diff --summarize -r$revision_from:$revision_to $repository | grep "^[D]"
+chmod 777 $target_directory -R
