@@ -52,8 +52,9 @@ do
                 # for 'src' directory, class files will be exported for java sources
                 trim_dir="WEB-INF/classes/"`echo "$directory" | sed 's|^/||' | sed 's|[^/]*/*||'`
                 mkdir -p "$target_directory/$trim_dir"
-                filename="WEB-INF/classes/"`echo "$filename" | sed 's|^/||' | sed 's|[^/]*/||' | sed 's|.java$|.class|'`
-                cp "$repository/WebContent/$filename" "$target_directory/$filename"
+                filename="WEB-INF/classes/"`echo "$filename" | sed 's|^/||' | sed 's|[^/]*/||' | sed 's|.java$||'`
+                file_dir=`echo "$filename" | sed 's|/[^/]*$||'`
+                \cp $repository'/WebContent/'$filename* $target_directory'/'$file_dir/
             else
                 trim_dir=`echo "$directory" | sed 's|^/||' | sed 's|[^/]*/*||'`
                 mkdir -p "$target_directory/$trim_dir"
