@@ -1,11 +1,14 @@
-svn-export-changes.sh
+export-changes-svn-and-git.sh
 =====================
 
 This is a branch for incrementally deployment of webapp(j2ee) project (especially for bug-fixs), exported files could be put to WAR packages.
 
 A general j2ee project structure:
+
 --src # for java sources
+
 --resouces # for resource files, i.e. framework configurations(spring etc. config and properties (logging, i18n, etc.
+
 --WebContent # for referenced libs, compiled sources, etc.
 
 When wrapping a WAR package, files under src and resources go to the WEB-INF/classes directory, compiled. This script specially deal with this to make it easier when you try to deploy a patch for wars.
